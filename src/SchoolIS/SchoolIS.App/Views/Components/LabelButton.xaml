@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Label xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:SchoolIS.App.Views.Components"
+       xmlns:ext="clr-namespace:SchoolIS.App.Extensions"
+       x:Class="SchoolIS.App.Views.Components.LabelButton"
+       x:DataType="local:LabelButton"
+       x:Name="This"
+       ext:CursorBehavior.Cursor="Hand">
+
+    <Label.GestureRecognizers>
+        <TapGestureRecognizer Command="{Binding Source={x:Reference This}, Path=Command}" 
+                              CommandParameter="{Binding Source={x:Reference This}, Path=CommandParameter}"/>
+    </Label.GestureRecognizers>
+</Label>

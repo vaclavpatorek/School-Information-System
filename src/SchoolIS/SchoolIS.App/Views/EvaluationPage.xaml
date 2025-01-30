@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<views:ContentPageBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                       xmlns:components="clr-namespace:SchoolIS.App.Views.Components"
+                       xmlns:converters="clr-namespace:SchoolIS.App.Converters.EvaluationPage"
+                       xmlns:viewModels="clr-namespace:SchoolIS.App.ViewModels"
+                       xmlns:views="clr-namespace:SchoolIS.App.Views"
+                       xmlns:models="clr-namespace:SchoolIS.App.Models"
+                       xmlns:blmodels="clr-namespace:SchoolIS.BL.Models;assembly=SchoolIS.BL"
+                       x:Class="SchoolIS.App.Views.EvaluationPage"
+                       x:Name="This"
+                       x:DataType="viewModels:EvaluationViewModel">
+
+    <views:ContentPageBase.Resources>
+        <Style x:Key="SubjectTitle" TargetType="Label">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontAutoScalingEnabled" Value="False" />
+            <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        </Style>
+        <converters:MessageColorConverter x:Key="MessageColorConverter" />
+    </views:ContentPageBase.Resources>
+
+    <components:SideBarLayout>
+        <components:SideBarLayout.PageContent>
+            <Grid RowDefinitions="180, *">
+                <!--Subject title and activity info-->
+                <Grid
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    ColumnDefinitions="*,*"
+                    RowDefinitions="30,*"
+                    Padding="20, 15"
+                    RowSpacing="30">
+
+                    <!--Subject title-->
+                    <StackLayout 
+                        Grid.Row="0"
+                        Orientation="Horizontal" 
+                        VerticalOptions="Center">
+                        
+                        <Label Style="{StaticResource SubjectTitle}"
+                               TextDecorations="Underline"
+                               VerticalOptions="Start">
+                            <Label.Text>
+                                <MultiBinding StringFormat="{}{0} ({1})">
+                                    <Binding Path="Activity.SubjectName" />
+                                    <Binding Path="Activity.SubjectShortcut" />
+                                </MultiBinding>
+                            </Label.Text>
+                        </Label>
+                    </StackLayout>
+
+                    <!--Info-->
+                    <VerticalStackLayout 
+                        Grid.Row="1"
+                        Spacing="10">
+
+                        <VerticalStackLayout.Resources>
+                            <Style x:Key="FieldName" TargetType="Label">
+                                <Setter Property="FontSize" Value="18" />
+                                <Setter Property="FontAttributes" Value="Bold" />
+                                <Setter Property="HorizontalOptions" Value="End" />
+                            </Style>
+                            <Style x:Key="FieldValue" TargetType="Label">
+                                <Setter Property="FontSize" Value="18" />
+                                <Setter Property="FontAttributes" Value="Bold" />
+                                <Setter Property="HorizontalOptions" Value="Start" />
+                                <Setter Property="TextColor" Value="#A09E9E" />
+                            </Style>
+                            <Style TargetType="HorizontalStackLayout">
+                                <Setter Property="Spacing" Value="20" />
+                            </Style>
+                            <Style TargetType="ContentView">
+                                <Setter Property="WidthRequest" Value="120" />
+                            </Style>
+                        </VerticalStackLayout.Resources>
+                        <HorizontalStackLayout>
+                            <ContentView>
+                                <Label Style="{StaticResource FieldName}"
+                                       Text="Location:"
+                                           HorizontalOptions="End"/>
+                            </ContentView>
+                            <Label Style="{StaticResource FieldValue}"
+                                   Text="{Binding Activity.RoomName}" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout>
+                            <ContentView>
+                                <Label Style="{StaticResource FieldName}"
+                                       Text="Date:"
+                                           HorizontalOptions="End"/>
+                            </ContentView>
+                            <Label Style="{StaticResource FieldValue}"
+                                   Text="{Binding Activity.StartsFrom, StringFormat='{0:D}'}" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout>
+                            <ContentView>
+                                <Label Style="{StaticResource FieldName}"
+                                       Text="Time:"
+                                           HorizontalOptions="End"/>
+                            </ContentView>
+                            <Label Style="{StaticResource FieldValue}"
+                                   Text="{Binding Activity.StartsFrom, StringFormat='{0:HH:mm}'}" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+
+                    <Grid
+                        Grid.Column="1"
+                        Grid.Row="1"
+                        WidthRequest="260"
+                        HeightRequest="180">
+
+                        <Label Text="Points"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Start"
+                               Margin="15,0,0,0" />
+
+                        <components:PieChart
+                            Margin="0,0,0,0"
+                            Evaluations="{Binding Activity.Evaluations}" />
+                    </Grid>
+                </Grid>
+
+                <!--Table with evaluations-->
+                <Grid
+                    Grid.Row="1"
+                    Margin="0, 0, 0, 30"
+                    HorizontalOptions="Center">
+                    <Grid RowDefinitions="auto, *, auto"
+                          MinimumWidthRequest="700"
+                          MaximumWidthRequest="900">
+                        <Label Grid.Row="0"
+                               Text="{Binding Activity.ActivityType}"
+                               FontSize="28" FontAttributes="Bold"
+                               HorizontalOptions="Center" />
+
+                        <!--Raw evaluations table-->
+                        <components:Table
+                            Grid.Row="1"
+                            HeightRequest="-1"
+                            HeaderLabels="Login, Student Name, Note, Points"
+                            ColumnAlignment="Start, Start, Start, Start"
+                            ColumnDefinitions="100, 200, *, 90"
+                            ColumnSpacing="10"
+                            Margin="0, 20, 0, 0"
+                            ModelList="{Binding Activity.Evaluations}">
+                            <components:Table.ItemTemplate>
+                                <DataTemplate x:DataType="blmodels:EvaluationListModel">
+                                    <StackLayout>
+                                        <Label Text="{Binding StudentLogin}" />
+                                        <Label>
+                                            <MultiBinding StringFormat="{}{0} {1}">
+                                                <Binding Path="StudentFirstName" />
+                                                <Binding Path="StudentLastName" />
+                                            </MultiBinding>
+                                        </Label>
+                                        <components:Textfield 
+                                            Text="{Binding Note, Mode=TwoWay}"
+                                            BackgroundColor="Transparent"
+                                            MinimumWidthRequest="200"
+                                            Margin="-10, 0, 0, 0" />
+                                        <components:Textfield
+                                            Text="{Binding Points, Mode=TwoWay}"
+                                            NumbersOnly="True" SpaceAllowed="False"
+                                            BackgroundColor="Transparent"
+                                            Margin="-10, 0, 0, 0"
+                                            EmptyValue="0"
+                                            MinimumWidthRequest="60"
+                                            MinValue="0" MaxValue="100" />
+                                    </StackLayout>
+                                </DataTemplate>
+                            </components:Table.ItemTemplate>
+                        </components:Table>
+
+                        <!--Global note field-->
+                        <Grid ColumnDefinitions="auto, auto, *, auto"
+                              Grid.Row="2"
+                              Margin="15, 5, 0, 0">
+
+                            <!--Global note field-->
+                            <Label Text="Global note:" FontSize="15" Grid.Column="0"
+                                   VerticalOptions="Center"
+                                   Margin="0, 0, 20, 0" />
+                            <Grid WidthRequest="300" Grid.Column="1">
+
+                                <components:Textfield
+                                    x:Name="GlobalNoteTextfield"
+                                    FontSize="15"
+                                    Placeholder="type" />
+                                <components:LabelButton
+                                    Text="{x:Static models:FaSolidIcons.Check}"
+                                    FontFamily="FaSolid"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="End"
+                                    Margin="0, 0, 10, 0"
+                                    FontSize="25"
+                                    Command="{Binding Source={x:Reference This}, 
+                                                Path=GlobalNoteButtonClickedCommand}"
+                                    CommandParameter="{Binding Source={x:Reference GlobalNoteTextfield},
+                                                        Path=Text}" />
+                            </Grid>
+
+                            <!--Error/Success message-->
+                            <Label Grid.Column="2"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center"
+                                   Margin="20, 0, 0, 0"
+                                   FontSize="15"
+                                   TextColor="{Binding IsError, Converter={StaticResource MessageColorConverter}}"
+                                   Text="{Binding Message}" />
+
+                            <!--Save evaluation button-->
+                            <components:BlackButton
+                                Grid.Column="3"
+                                Text="Save evaluation"
+                                FontSize="15"
+                                HorizontalOptions="End"
+                                TextMargin="20, 5"
+                                Margin="0, 0, 32, 0"
+                                Command="{Binding SaveEvaluationsCommand}" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </components:SideBarLayout.PageContent>
+    </components:SideBarLayout>
+</views:ContentPageBase>

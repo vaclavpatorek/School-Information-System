@@ -1,0 +1,753 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<views:ContentPageBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                       xmlns:components="clr-namespace:SchoolIS.App.Views.Components"
+                       xmlns:vm="clr-namespace:SchoolIS.App.ViewModels"
+                       xmlns:views="clr-namespace:SchoolIS.App.Views"
+                       xmlns:extensions="clr-namespace:SchoolIS.App.Extensions"
+                       xmlns:converters="clr-namespace:SchoolIS.App.Converters.SubjectsPage"
+                       xmlns:adminConverters="clr-namespace:SchoolIS.App.Converters.AdminPage"
+                       xmlns:enums="clr-namespace:SchoolIS.Common.Enums;assembly=SchoolIS.Common"
+                       xmlns:models="clr-namespace:SchoolIS.App.Models"
+                       xmlns:blmodels="clr-namespace:SchoolIS.BL.Models;assembly=SchoolIS.BL"
+                       xmlns:charts="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+                       xmlns:zoft="http://zoft.MauiExtensions/Controls"
+                       x:DataType="vm:SubjectViewModel"
+                       x:Class="SchoolIS.App.Views.SubjectPage"
+                       x:Name="This"
+                       Shell.PresentationMode="NotAnimated">
+    <views:ContentPageBase.Resources>
+        <Style x:Key="SubjectTitle" TargetType="Label">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontAutoScalingEnabled" Value="False" />
+            <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        </Style>
+        <Style x:Key="SelectableLabel" TargetType="Label">
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="extensions:CursorBehavior.Cursor" Value="Hand" />
+            <Setter Property="Opacity" Value="0.4" />
+        </Style>
+        <Style x:Key="VerticalSeparator" TargetType="BoxView">
+            <Setter Property="BackgroundColor" Value="#3B3B3B" />
+            <Setter Property="Margin" Value="10, 0" />
+            <Setter Property="WidthRequest" Value="1" />
+        </Style>
+        <Style x:Key="HorizontalSeparator" TargetType="BoxView">
+            <Setter Property="BackgroundColor" Value="#3B3B3B" />
+            <Setter Property="Margin" Value="0, 10" />
+            <Setter Property="HeightRequest" Value="1" />
+        </Style>
+        <Style x:Key="SubsectionTitle" TargetType="Label">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontAutoScalingEnabled" Value="false" />
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        </Style>
+        <Style x:Key="ActivityFormField" TargetType="Label">
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="FontAutoScalingEnabled" Value="false" />
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="FontFamily" Value="OpenSansSemibold" />
+            <Setter Property="VerticalTextAlignment" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+        <converters:TabBarOpacityConverter x:Key="TabBarOpacityConverter" />
+        <converters:TabBarUnderlineConverter x:Key="TabBarUnderlineConverter" />
+        <converters:TabBarContentConverter x:Key="TabBarContentConverter" />
+        <converters:ActivityTypeSelectedConverter x:Key="ActivityTypeSelectedConverter" />
+        <converters:DateRangeConverter x:Key="DateRangeConverter" />
+        <converters:ActivityEditStateConverter x:Key="ActivityEditStateConverter" />
+        <converters:AddStudentFilterConverter x:Key="AddStudentFilterConverter" />
+        <converters:InvalidFieldLabelColor x:Key="InvalidFieldLabelColor" />
+    </views:ContentPageBase.Resources>
+
+    <components:SideBarLayout>
+        <components:SideBarLayout.PageContent>
+            <Grid RowDefinitions="200, auto, *">
+                <!--Subject title and info-->
+                <StackLayout Grid.Row="0" Grid.Column="0" Padding="20, 15">
+                    <StackLayout Orientation="Horizontal" VerticalOptions="Center">
+                        <Label Style="{StaticResource SubjectTitle}"
+                               TextDecorations="Underline">
+                            <Label.Text>
+                                <MultiBinding StringFormat="{}{0} ({1})">
+                                    <Binding Path="Subject.Name" />
+                                    <Binding Path="Subject.Shortcut" />
+                                </MultiBinding>
+                            </Label.Text>
+                        </Label>
+                    </StackLayout>
+                    <StackLayout Padding="20,20,0,0" Orientation="Vertical">
+                        <Label FontFamily="OpenSansSemibold">Subject info:</Label>
+                        <Label Text="{Binding Subject.Info}" />
+                    </StackLayout>
+                </StackLayout>
+
+                <!--TabBar-->
+                <HorizontalStackLayout Grid.Row="1"
+                                       HorizontalOptions="Center"
+                                       Spacing="30"
+                                       Padding="0, 0, 0, 5"
+                                       x:DataType="views:SubjectPage"
+                                       BindingContext="{x:Reference This}">
+                    <Label Style="{StaticResource SelectableLabel}"
+                           Opacity="{Binding SelectedTab, 
+                             Converter={StaticResource TabBarOpacityConverter}, 
+                             ConverterParameter=Activities}"
+                           TextDecorations="{Binding SelectedTab, 
+                             Converter={StaticResource TabBarUnderlineConverter},
+                             ConverterParameter=Activities}"
+                           Text="Activities">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectTabCommand}"
+                                                  CommandParameter="Activities" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label Style="{StaticResource SelectableLabel}"
+                           Opacity="{Binding SelectedTab, 
+                             Converter={StaticResource TabBarOpacityConverter},
+                             ConverterParameter=Students}"
+                           TextDecorations="{Binding SelectedTab, 
+                             Converter={StaticResource TabBarUnderlineConverter},
+                             ConverterParameter=Students}"
+                           Text="Students">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectTabCommand}"
+                                                  CommandParameter="Students" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+
+                <!--Activities tab-->
+                <Grid Grid.Row="2"
+                      IsVisible="{Binding Source={x:Reference This}, Path=SelectedTab,
+                                    Converter={StaticResource TabBarContentConverter}, ConverterParameter=Activities}"
+                      Style="{StaticResource PageBackground}"
+                      ColumnDefinitions="*, auto, auto"
+                      Margin="40, 20, 40, 20"
+                      x:DataType="vm:SubjectViewModel">
+                    <!--Table of activities-->
+                    <Grid
+                        Grid.Column="0" RowSpacing="20"
+                        RowDefinitions="auto, *">
+                        <!--Date selector-->
+                        <Label
+                            Grid.Row="0"
+                            Text="{Binding Activities, Converter={StaticResource DateRangeConverter}}"
+                            Style="{StaticResource SubsectionTitle}"
+                            HorizontalOptions="Center" />
+
+                        <components:Table
+                            Grid.Row="1"
+                            Margin="0, 0, 20, 10"
+                            ColumnDefinitions="30, *, *, *, *, *, 50"
+                            HeaderLabels=",Date, From, To, Room, Type,"
+                            ColumnAlignment="Start, Start, Center, Center, Center, Center, Center"
+                            HeightRequest="-1">
+                            <components:Table.Resources>
+                                <converters:ActivityTypeConverter x:Key="ActivityTypeConverter" />
+                                <converters:SortIconConverter x:Key="SortIconConverter" />
+                                <converters:ActivityModelListConverter
+                                    x:Key="ActivityModelListConverter" />
+                                <converters:ActivityTypeFilterBorderConverter
+                                    x:Key="ActivityTypeFilterBorderConverter" />
+                                <converters:RowBorderColorConverter
+                                    x:Key="RowBorderColorConverter" />
+                            </components:Table.Resources>
+
+                            <components:Table.ModelList>
+                                <MultiBinding
+                                    Converter="{StaticResource ActivityModelListConverter}">
+                                    <Binding Path="Activities" />
+                                    <Binding Path="ActivityTypeFilter" />
+                                    <Binding Path="DateFilterAsc" />
+                                    <Binding Path="Activities.Count" />
+                                </MultiBinding>
+                            </components:Table.ModelList>
+
+                            <components:Table.ItemTemplate>
+                                <DataTemplate x:DataType="blmodels:ActivityListModel">
+                                    <StackLayout>
+                                        <components:RowBorder
+                                            Converter="{StaticResource RowBorderColorConverter}"
+                                            FirstBinding="{Binding Source={RelativeSource 
+                                                                    AncestorType={x:Type vm:SubjectViewModel}},
+                                                                  Path=NewActivity.Id}"
+                                            SecondBinding="{Binding .}">
+                                        </components:RowBorder>
+                                        <Label Text="{x:Static models:FaSolidIcons.x}"
+                                               TextColor="Red"
+                                               extensions:CursorBehavior.Cursor="Hand">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource 
+                                                                    AncestorType={x:Type vm:SubjectViewModel}},
+                                                                  Path=DeleteActivityCommand}"
+                                                    CommandParameter="{Binding}" />
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                        <Label
+                                            x:Name="TestLabel"
+                                            Text="{Binding StartsFrom, StringFormat='{0:MM}.{0:dd}'}" />
+                                        <Label
+                                            Text="{Binding StartsFrom, StringFormat='{0:HH}:{0:mm}'}" />
+                                        <Label
+                                            Text="{Binding EndsAt, StringFormat='{0:HH}:{0:mm}'}" />
+                                        <Label Text="{Binding RoomName}" />
+                                        <Label Text="{Binding ActivityType}"
+                                               TextColor="{Binding ActivityType, Converter={StaticResource ActivityTypeConverter}}" />
+                                        <HorizontalStackLayout Spacing="10">
+                                            <Label FontFamily="FaSolid"
+                                                   Text="{x:Static models:FaSolidIcons.FileCircleCheck}"
+                                                   extensions:CursorBehavior.Cursor="Hand">
+                                                <Label.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Command="{Binding Source={RelativeSource 
+                                                                    AncestorType={x:Type vm:SubjectViewModel}},
+                                                                  Path=GoToActivityCommand}"
+                                                        CommandParameter="{Binding}" />
+                                                </Label.GestureRecognizers>
+                                            </Label>
+                                            <Label FontFamily="FaSolid"
+                                                   Text="{x:Static models:FaSolidIcons.Pen}"
+                                                   extensions:CursorBehavior.Cursor="Hand">
+                                                <Label.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Command="{Binding Source={RelativeSource 
+                                                                    AncestorType={x:Type vm:SubjectViewModel}},
+                                                                  Path=EditActivityCommand}"
+                                                        CommandParameter="{Binding}" />
+                                                </Label.GestureRecognizers>
+                                            </Label>
+                                        </HorizontalStackLayout>
+                                    </StackLayout>
+                                </DataTemplate>
+                            </components:Table.ItemTemplate>
+
+                            <!--Filters-->
+                            <components:Table.Filters>
+                                <StackLayout>
+                                    <Label />
+                                    <HorizontalStackLayout
+                                        extensions:CursorBehavior.Cursor="Hand"
+                                        VerticalOptions="Center">
+                                        <HorizontalStackLayout.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding ToggleDateFilterCommand}" />
+                                        </HorizontalStackLayout.GestureRecognizers>
+                                        <Label
+                                            FontFamily="FaSolid"
+                                            FontSize="16"
+                                            Text="{x:Static models:FaSolidIcons.CalendarDays}"
+                                            HorizontalOptions="Start" />
+                                        <Label
+                                            FontFamily="FaSolid"
+                                            FontSize="16"
+                                            Text="{Binding DateFilterAsc, Converter={StaticResource SortIconConverter}}" />
+                                    </HorizontalStackLayout>
+                                    <Label />
+                                    <Label />
+                                    <Label />
+                                    <!--Activity type filter icons-->
+                                    <FlexLayout Direction="Row"
+                                                JustifyContent="Center"
+                                                Wrap="Wrap">
+                                        <FlexLayout.Resources>
+                                            <Style TargetType="Button">
+                                                <Setter Property="WidthRequest" Value="26" />
+                                                <Setter Property="HeightRequest" Value="26" />
+                                                <Setter Property="Padding" Value="0"></Setter>
+                                                <Setter Property="extensions:CursorBehavior.Cursor"
+                                                        Value="Hand" />
+                                            </Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="StrokeShape"
+                                                        Value="RoundRectangle 7" />
+                                                <Setter Property="Margin" Value="1" />
+                                            </Style>
+                                            <Style TargetType="HorizontalStackLayout">
+                                                <Setter Property="Spacing" Value="1" />
+                                            </Style>
+                                            <converters:ActivityTypeFilterConverter
+                                                x:Key="FilterConverter" />
+                                        </FlexLayout.Resources>
+
+                                        <HorizontalStackLayout>
+                                            <Border
+                                                Stroke="{Binding ActivityTypeFilter,
+                                                        Converter={StaticResource ActivityTypeFilterBorderConverter},
+                                                        ConverterParameter={x:Static enums:ActivityType.Meeting}}"
+                                                StrokeThickness="1">
+                                                <Button
+                                                    TextColor="{StaticResource MeetingColor}"
+                                                    Text="M"
+                                                    BackgroundColor="{Binding ActivityTypeFilter, 
+                                                         Converter={StaticResource FilterConverter},
+                                                         ConverterParameter={x:Static enums:ActivityType.Meeting}}"
+                                                    Command="{Binding ToggleActivityTypeFilterCommand}"
+                                                    CommandParameter="{x:Static enums:ActivityType.Meeting}" />
+                                            </Border>
+                                            <Border
+                                                Stroke="{Binding ActivityTypeFilter,
+                                                        Converter={StaticResource ActivityTypeFilterBorderConverter},
+                                                        ConverterParameter={x:Static enums:ActivityType.Test}}"
+                                                StrokeThickness="1">
+                                                <Button
+                                                    TextColor="{StaticResource TestColor}"
+                                                    Text="T"
+                                                    BackgroundColor="{Binding ActivityTypeFilter, 
+                                                         Converter={StaticResource FilterConverter},
+                                                         ConverterParameter={x:Static enums:ActivityType.Test}}"
+                                                    Command="{Binding ToggleActivityTypeFilterCommand}"
+                                                    CommandParameter="{x:Static enums:ActivityType.Test}" />
+                                            </Border>
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout>
+                                            <Border
+                                                Stroke="{Binding ActivityTypeFilter,
+                                                        Converter={StaticResource ActivityTypeFilterBorderConverter},
+                                                        ConverterParameter={x:Static enums:ActivityType.Lecture}}"
+                                                StrokeThickness="1">
+                                                <Button
+                                                    TextColor="{StaticResource LectureColor}"
+                                                    Text="L"
+                                                    BackgroundColor="{Binding ActivityTypeFilter, 
+                                                         Converter={StaticResource FilterConverter},
+                                                         ConverterParameter={x:Static enums:ActivityType.Lecture}}"
+                                                    Command="{Binding ToggleActivityTypeFilterCommand}"
+                                                    CommandParameter="{x:Static enums:ActivityType.Lecture}" />
+                                            </Border>
+                                            <Border
+                                                Stroke="{Binding ActivityTypeFilter,
+                                                        Converter={StaticResource ActivityTypeFilterBorderConverter},
+                                                        ConverterParameter={x:Static enums:ActivityType.Exercise}}"
+                                                StrokeThickness="1">
+                                                <Button
+                                                    TextColor="{StaticResource ExerciseColor}"
+                                                    Text="E"
+                                                    BackgroundColor="{Binding ActivityTypeFilter, 
+                                                         Converter={StaticResource FilterConverter},
+                                                         ConverterParameter={x:Static enums:ActivityType.Exercise}}"
+                                                    Command="{Binding ToggleActivityTypeFilterCommand}"
+                                                    CommandParameter="{x:Static enums:ActivityType.Exercise}" />
+                                            </Border>
+                                        </HorizontalStackLayout>
+                                    </FlexLayout>
+                                    <Label />
+                                </StackLayout>
+                            </components:Table.Filters>
+                        </components:Table>
+                    </Grid>
+
+                    <BoxView Grid.Column="1" Style="{StaticResource VerticalSeparator}" />
+
+                    <!--Add activity form-->
+                    <Grid Grid.Column="2"
+                          RowDefinitions="auto, *, auto"
+                          Margin="0, 0, 0, 20"
+                          x:DataType="vm:SubjectViewModel">
+                        <Label Grid.Row="0"
+                               Text="{Binding EditingActivity, Converter={StaticResource ActivityEditStateConverter}, 
+                                        ConverterParameter='Create activity;Edit activity'}"
+                               Style="{StaticResource SubsectionTitle}"
+                               HorizontalTextAlignment="Center" />
+                        <Grid Grid.Row="1"
+                              RowDefinitions="50, 20, auto, auto, auto, *, auto"
+                              ColumnDefinitions="120, *"
+                              MinimumWidthRequest="358"
+                              Margin="50, 30, 0, 0">
+
+                            <!--Lecture type-->
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Style="{StaticResource ActivityFormField}"
+                                   Text="Type:" VerticalOptions="End" />
+                            <FlexLayout Grid.Row="0" Grid.Column="1"
+                                        Direction="Row"
+                                        JustifyContent="Start"
+                                        Wrap="Wrap">
+                                <FlexLayout.Resources>
+                                    <Style TargetType="Label">
+                                        <Setter Property="FontSize" Value="18" />
+                                        <Setter Property="FontAutoScalingEnabled" Value="False" />
+                                        <Setter Property="extensions:CursorBehavior.Cursor"
+                                                Value="Hand" />
+                                        <Setter Property="WidthRequest" Value="100" />
+                                    </Style>
+                                </FlexLayout.Resources>
+                                <Label
+                                    Text="{Binding Source={x:Static enums:ActivityType.Meeting}}"
+                                    Opacity="{Binding NewActivity.ActivityType, 
+                                                 Converter={StaticResource ActivityTypeSelectedConverter}, 
+                                                 ConverterParameter={x:Static enums:ActivityType.Meeting}}"
+                                    TextColor="{StaticResource MeetingColor}"
+                                    FontAttributes="{Binding NewActivity.ActivityType, 
+                                                        Converter={StaticResource ActivityTypeSelectedConverter}, 
+                                                        ConverterParameter={x:Static enums:ActivityType.Meeting}}">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding SelectActivityTypeCommand}"
+                                            CommandParameter="{x:Static enums:ActivityType.Meeting}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                                <Label Text="{Binding Source={x:Static enums:ActivityType.Test}}"
+                                       Opacity="{Binding NewActivity.ActivityType, 
+                                                 Converter={StaticResource ActivityTypeSelectedConverter}, 
+                                                 ConverterParameter={x:Static enums:ActivityType.Test}}"
+                                       TextColor="{StaticResource TestColor}"
+                                       FontAttributes="{Binding NewActivity.ActivityType, 
+                                                        Converter={StaticResource ActivityTypeSelectedConverter}, 
+                                                        ConverterParameter={x:Static enums:ActivityType.Test}}">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding SelectActivityTypeCommand}"
+                                            CommandParameter="{x:Static enums:ActivityType.Test}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                                <Label
+                                    Text="{Binding Source={x:Static enums:ActivityType.Lecture}}"
+                                    Opacity="{Binding NewActivity.ActivityType, 
+                                                 Converter={StaticResource ActivityTypeSelectedConverter}, 
+                                                 ConverterParameter={x:Static enums:ActivityType.Lecture}}"
+                                    TextColor="{StaticResource LectureColor}"
+                                    FontAttributes="{Binding NewActivity.ActivityType, 
+                                                        Converter={StaticResource ActivityTypeSelectedConverter}, 
+                                                        ConverterParameter={x:Static enums:ActivityType.Lecture}}">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding SelectActivityTypeCommand}"
+                                            CommandParameter="{x:Static enums:ActivityType.Lecture}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                                <Label
+                                    Text="{Binding Source={x:Static enums:ActivityType.Exercise}}"
+                                    Opacity="{Binding NewActivity.ActivityType, 
+                                                 Converter={StaticResource ActivityTypeSelectedConverter}, 
+                                                 ConverterParameter={x:Static enums:ActivityType.Exercise}}"
+                                    TextColor="{StaticResource ExerciseColor}"
+                                    FontAttributes="{Binding NewActivity.ActivityType, 
+                                                        Converter={StaticResource ActivityTypeSelectedConverter}, 
+                                                        ConverterParameter={x:Static enums:ActivityType.Exercise}}">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding SelectActivityTypeCommand}"
+                                            CommandParameter="{x:Static enums:ActivityType.Exercise}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </FlexLayout>
+
+                            <!--Lecture date-->
+                            <Label Grid.Row="2" Grid.Column="0"
+                                   Style="{StaticResource ActivityFormField}"
+                                   Text="Date:"
+                                   TextColor="{Binding ProblemsWith, 
+                                                Converter={StaticResource InvalidFieldLabelColor},
+                                                ConverterParameter=Date}"/>
+                            <DatePicker Grid.Row="2" Grid.Column="2" Margin="0, 5"
+                                        Date="{Binding NewDate, Mode=TwoWay}" />
+
+                            <!--Lecture start time-->
+                            <Label Grid.Row="3" Grid.Column="0"
+                                   Style="{StaticResource ActivityFormField}"
+                                   Text="Starts from: "
+                                   TextColor="{Binding ProblemsWith, 
+                                                Converter={StaticResource InvalidFieldLabelColor},
+                                                ConverterParameter=StartsFrom}"/>
+                            <components:TimePicker
+                                Grid.Row="3" Grid.Column="1" Margin="0, 5"
+                                Date="{Binding NewActivity.StartsFrom, Mode=TwoWay}" />
+
+                            <!--Lecture end time-->
+                            <Label Grid.Row="4" Grid.Column="0"
+                                   Style="{StaticResource ActivityFormField}"
+                                   Text="Ends at:"
+                                   TextColor="{Binding ProblemsWith, 
+                                                Converter={StaticResource InvalidFieldLabelColor},
+                                                ConverterParameter=EndsAt}"/>
+                            <components:TimePicker
+                                Grid.Row="4" Grid.Column="1" Margin="0, 5"
+                                Date="{Binding NewActivity.EndsAt, Mode=TwoWay}" />
+
+                            <!--Room selection-->
+                            <Label Grid.Row="5" Grid.Column="0"
+                                   Style="{StaticResource ActivityFormField}"
+                                   Text="Room:"
+                                   VerticalTextAlignment="Start"
+                                   VerticalOptions="Start" />
+                            <Border Grid.Row="5" Grid.Column="1"
+                                    StrokeShape="RoundRectangle 15"
+                                    StrokeThickness="0"
+                                    Margin="0, 5, 0, 0">
+                                <CollectionView
+                                    SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedRoom, Mode=TwoWay}"
+                                    ItemsSource="{Binding Rooms}">
+                                    <CollectionView.Resources>
+                                        <converters:RoomSelectorColorConverter
+                                            x:Key="RoomSelectorColorConverter" />
+                                    </CollectionView.Resources>
+
+                                    <CollectionView.EmptyView>
+                                        <Label Text="No rooms available" HorizontalOptions="Center"
+                                               TextColor="Red" />
+                                    </CollectionView.EmptyView>
+
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                                    </CollectionView.ItemsLayout>
+
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="blmodels:RoomListModel">
+                                            <Border StrokeShape="RoundRectangle 15"
+                                                    StrokeThickness="0"
+                                                    Padding="0,5"
+                                                    extensions:CursorBehavior.Cursor="Hand">
+                                                <Border.BackgroundColor>
+                                                    <MultiBinding
+                                                        Converter="{StaticResource RoomSelectorColorConverter}">
+                                                        <Binding
+                                                            Source="{RelativeSource AncestorType={x:Type vm:SubjectViewModel}}"
+                                                            Path="SelectedRoom" />
+                                                        <Binding Path="." />
+                                                    </MultiBinding>
+                                                </Border.BackgroundColor>
+                                                <Label
+                                                    Text="{Binding Name}"
+                                                    FontSize="18"
+                                                    HorizontalOptions="Center"
+                                                    FontAutoScalingEnabled="False" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </Border>
+                            <VerticalStackLayout
+                                Grid.Row="6"
+                                Grid.ColumnSpan="2"
+                                Margin="0, 20, 0,0">
+                                <Label FontSize="15"
+                                       Text="{Binding ErrorMessage}"
+                                       TextColor="Red"
+                                       HorizontalOptions="Center" />
+                                <HorizontalStackLayout
+                                    Margin="0, 20, 0,0"
+                                    HorizontalOptions="Center">
+                                    <HorizontalStackLayout.Resources>
+                                        <Style TargetType="components:BlackButton">
+                                            <Setter Property="FontSize" Value="18" />
+                                            <Setter Property="TextMargin" Value="0, 4" />
+                                            <Setter Property="HorizontalOptions" Value="Center" />
+                                        </Style>
+                                    </HorizontalStackLayout.Resources>
+                                    <components:BlackButton
+                                        Text="{Binding EditingActivity, Converter={StaticResource ActivityEditStateConverter},
+                                                ConverterParameter='Add activity;Save'}"
+                                        WidthRequest="{Binding EditingActivity, Converter={StaticResource ActivityEditStateConverter}}"
+                                        Command="{Binding ConfirmActivityCommand}" />
+                                    <components:BlackButton
+                                        Text="Cancel"
+                                        WidthRequest="100"
+                                        IsVisible="{Binding EditingActivity}"
+                                        Margin="30, 0, 0, 0"
+                                        Command="{Binding CancelActivityCommand}" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <!--Students tab-->
+                <Grid Grid.Row="2"
+                      IsVisible="{Binding Source={x:Reference This}, Path=SelectedTab,
+                                    Converter={StaticResource TabBarContentConverter}, ConverterParameter=Students}"
+                      Style="{StaticResource PageBackground}"
+                      ColumnDefinitions="10*, auto, 5*"
+                      Margin="40, 20, 40, 20"
+                      x:DataType="vm:SubjectViewModel">
+
+                    <!--Students table-->
+                    <Grid Grid.Column="0"
+                          RowDefinitions="*, auto, auto">
+                        <components:Table
+                            Grid.Row="0" HeightRequest="-1"
+                            Margin="0, 0, 20, 0"
+                            ColumnDefinitions="40, *, 40, *, *, 30"
+                            HeaderLabels=",Login, ,Student Name, Points,"
+                            ColumnAlignment="End, Start, End, Start, Center, Center">
+
+                            <components:Table.Resources>
+                                <converters:StudentsSortConverter x:Key="StudentsSortConverter" />
+                                <converters:StringIsNotEmptyConverter
+                                    x:Key="StringIsNotEmptyConverter" />
+                            </components:Table.Resources>
+
+                            <components:Table.ModelList>
+                                <MultiBinding Converter="{StaticResource StudentsSortConverter}">
+                                    <Binding Path="Students" />
+                                    <Binding Source="{x:Reference This}" Path="StudentsSortAsc" />
+                                    <Binding Source="{x:Reference This}" Path="StudentsSortBy" />
+                                    <Binding Source="{x:Reference TfLoginFilter}" Path="Text" />
+                                    <Binding Source="{x:Reference TfNameFilter}" Path="Text" />
+                                    <Binding Path="Students.Count" />
+                                </MultiBinding>
+                            </components:Table.ModelList>
+
+                            <!--Row definition-->
+                            <components:Table.ItemTemplate>
+                                <DataTemplate x:DataType="blmodels:HasSubjectDetailModel">
+                                    <StackLayout>
+                                        <Label />
+                                        <Label Text="{Binding UserLogin}" />
+                                        <Label />
+                                        <Label>
+                                            <Label.Text>
+                                                <MultiBinding StringFormat="{}{0} {1}">
+                                                    <Binding Path="UserLastName" />
+                                                    <Binding Path="UserFirstName" />
+                                                </MultiBinding>
+                                            </Label.Text>
+                                        </Label>
+                                        <Label Text="{Binding TotalPoints}" />
+                                        <components:LabelButton
+                                            TextColor="Red"
+                                            Text="{x:Static models:FaSolidIcons.x}"
+                                            Command="{Binding Source={RelativeSource 
+                                                                 AncestorType={x:Type vm:SubjectViewModel}},
+                                                                 Path=RemoveStudentCommand}"
+                                            CommandParameter="{Binding}" />
+                                    </StackLayout>
+                                </DataTemplate>
+                            </components:Table.ItemTemplate>
+
+                            <!--Table filters-->
+                            <components:Table.Filters>
+                                <StackLayout>
+                                    <StackLayout.Resources>
+                                        <Style TargetType="components:LabelButton">
+                                            <Setter Property="TextColor" Value="White" />
+                                            <Setter Property="Margin" Value="0, 0, 7, 0" />
+                                            <Setter Property="VerticalOptions" Value="Center" />
+                                            <Setter Property="HorizontalOptions" Value="End" />
+                                        </Style>
+                                    </StackLayout.Resources>
+
+                                    <!--Login sorter-->
+                                    <components:SortButton
+                                        SortAsc="{Binding Source={x:Reference This}, 
+                                                    Path=StudentsSortLoginAsc, Mode=TwoWay}"
+                                        Margin="0, 0, 10, 0" />
+                                    <!--Login filter-->
+                                    <Grid BindingContext="{x:Reference This}"
+                                          x:DataType="views:SubjectPage">
+                                        <components:Textfield
+                                            WidthRequest="100"
+                                            Placeholder="Login" FontSize="14"
+                                            x:Name="TfLoginFilter" />
+                                        <components:LabelButton
+                                            IsVisible="{Binding Source={x:Reference TfLoginFilter}, Path=Text,
+                                                        Converter={StaticResource StringIsNotEmptyConverter}}"
+                                            Text="{x:Static models:FaSolidIcons.x}"
+                                            Command="{Binding SetEmptyCommand}"
+                                            CommandParameter="{x:Reference TfLoginFilter}" />
+                                    </Grid>
+
+                                    <!--Name sorter-->
+                                    <components:SortButton
+                                        SortAsc="{Binding Source={x:Reference This}, 
+                                                    Path=StudentsSortNameAsc, Mode=TwoWay}"
+                                        Margin="0, 0, 10, 0" />
+
+                                    <!--Name filter-->
+                                    <Grid BindingContext="{x:Reference This}"
+                                          x:DataType="views:SubjectPage">
+                                        <components:Textfield
+                                            WidthRequest="170"
+                                            x:Name="TfNameFilter"
+                                            Placeholder="Find by name" FontSize="14" />
+                                        <components:LabelButton
+                                            IsVisible="{Binding Source={x:Reference TfNameFilter}, Path=Text,
+                                                        Converter={StaticResource StringIsNotEmptyConverter}}"
+                                            Text="{x:Static models:FaSolidIcons.x}"
+                                            Command="{Binding SetEmptyCommand}"
+                                            CommandParameter="{x:Reference TfNameFilter}" />
+                                    </Grid>
+
+                                    <!--Points sorter-->
+                                    <components:SortButton
+                                        SortAsc="{Binding Source={x:Reference This}, 
+                                                                        Path=StudentsSortPointsAsc, Mode=TwoWay}" />
+                                    <Label />
+                                </StackLayout>
+                            </components:Table.Filters>
+                        </components:Table>
+
+                        <BoxView Grid.Row="1" Style="{StaticResource HorizontalSeparator}" />
+
+                        <!--Student add button-->
+                        <HorizontalStackLayout Grid.Row="2" Spacing="30"
+                                               Margin="50, 0, 0, 0"
+                                               HorizontalOptions="Start">
+                            <Border StrokeShape="RoundRectangle 10" StrokeThickness="0">
+                                <zoft:AutoCompleteEntry
+                                    x:Name="AddStudentEntry"
+                                    BackgroundColor="#202020"
+                                    HeightRequest="30"
+                                    WidthRequest="170"
+                                    Margin="0, -2"
+                                    Placeholder="xlogin00"
+                                    PlaceholderColor="{StaticResource PlaceholderColor}"
+                                    TextMemberPath="Login"
+                                    DisplayMemberPath="FullNameLogin"
+                                    TextChanged="AutoCompleteEntry_TextChanged">
+                                    <zoft:AutoCompleteEntry.ItemsSource>
+                                        <MultiBinding
+                                            Converter="{StaticResource AddStudentFilterConverter}">
+                                            <Binding Path="OtherStudents" />
+                                            <Binding Source="{x:Reference This}"
+                                                     Path="AddStudentLoginFilter" />
+                                        </MultiBinding>
+                                    </zoft:AutoCompleteEntry.ItemsSource>
+                                </zoft:AutoCompleteEntry>
+                            </Border>
+
+                            <components:BlackButton Text="Add student" WidthRequest="150"
+                                                    TextMargin="0, 5" FontSize="15"
+                                                    Command="{Binding Source={x:Reference This}, Path=AddStudentButtonClickCommand}"
+                                                    CommandParameter="{Binding Source={x:Reference AddStudentEntry}, 
+                                                                        Path=SelectedSuggestion}" />
+                            <Label FontSize="15"
+                                   Text="{Binding ErrorMessage}"
+                                   TextColor="Red"
+                                   Margin="10, 0, 0, 0"
+                                   HorizontalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Grid>
+
+                    <BoxView Grid.Column="1" Style="{StaticResource VerticalSeparator}" />
+
+                    <!--Evaluation graph-->
+                    <VerticalStackLayout
+                        Grid.Column="2"
+                        VerticalOptions="Center">
+
+                        <Label Text="Student evaluations"
+                               Margin="0,-20,0,20"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center" />
+
+                        <components:BarChart
+                            HasSubjectData="{Binding Students}"
+                            WidthRequest="400"
+                            HeightRequest="400">
+                        </components:BarChart>
+
+                    </VerticalStackLayout>
+                </Grid>
+            </Grid>
+        </components:SideBarLayout.PageContent>
+    </components:SideBarLayout>
+</views:ContentPageBase>

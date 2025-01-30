@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SchoolIS.App.Views.Components.TimePicker"
+             xmlns:local="clr-namespace:SchoolIS.App.Views.Components"
+             xmlns:ext="clr-namespace:SchoolIS.App.Extensions"
+             x:DataType="local:TimePicker"
+             x:Name="This">
+
+    <HorizontalStackLayout BindingContext="{x:Reference This}">
+        <local:Textfield
+            x:Name="HourTextField"
+            FontSize="{Binding FontSize}" MinValue="0" MaxValue="23"
+            SpaceAllowed="False" NumbersOnly="True"
+            Text="{Binding DateHour, Mode=TwoWay}"/>
+        <Label Text=":"
+            VerticalTextAlignment="Center"
+            Margin="10, 0, 10, 0"/>
+        <local:Textfield
+            x:Name="MinuteTextField"
+            FontSize="{Binding FontSize}" MinValue="0" MaxValue="59"
+            SpaceAllowed="False" NumbersOnly="True"
+            Text="{Binding DateMinute, Mode=TwoWay}"/>
+    </HorizontalStackLayout>
+</ContentView>

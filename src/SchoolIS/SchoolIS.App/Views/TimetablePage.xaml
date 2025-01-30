@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<views:ContentPageBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                       xmlns:components="clr-namespace:SchoolIS.App.Views.Components"
+                       xmlns:vm="clr-namespace:SchoolIS.App.ViewModels"
+                       xmlns:views="clr-namespace:SchoolIS.App.Views"
+                       x:DataType="vm:TimetableViewModel"
+                       x:Class="SchoolIS.App.Views.TimetablePage"
+                       Shell.PresentationMode="NotAnimated">
+
+    <components:SideBarLayout>
+        <components:SideBarLayout.PageContent>
+            <Label/>
+        </components:SideBarLayout.PageContent>
+    </components:SideBarLayout>
+</views:ContentPageBase>

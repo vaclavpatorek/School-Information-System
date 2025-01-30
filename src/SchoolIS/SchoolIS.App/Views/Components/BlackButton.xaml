@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SchoolIS.App.Views.Components.BlackButton"
+             xmlns:local="clr-namespace:SchoolIS.App.Views.Components"
+             xmlns:ext="clr-namespace:SchoolIS.App.Extensions"
+             x:DataType="local:BlackButton"
+             x:Name="This">
+    
+    <Border StrokeShape="RoundRectangle 20"
+            Stroke="Black" BackgroundColor="Black"
+            ext:CursorBehavior.Cursor="Hand"
+            BindingContext="{x:Reference This}">
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding Command}" CommandParameter="{Binding CommandParameter}"/>
+        </Border.GestureRecognizers>
+        <Label
+            Text="{Binding Text}"
+            VerticalOptions="Center"
+            HorizontalOptions="Center"
+            FontSize="{Binding FontSize}"
+            TextColor="#F8F8F8"
+            Margin="{Binding TextMargin}"/>
+    </Border>
+</ContentView>

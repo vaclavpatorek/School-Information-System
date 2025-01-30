@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:components="clr-namespace:SchoolIS.App.Views.Components"
+             xmlns:extensions="clr-namespace:SchoolIS.App.Extensions"
+             x:Class="SchoolIS.App.Views.Components.Table"
+             x:Name="This"
+             x:DataType="components:Table">
+
+    <ContentView.Resources>
+        <Style x:Key="TableBorderStyle" TargetType="Border">
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="BackgroundColor" Value="#232222" />
+            <Setter Property="Padding" Value="0,5" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+        </Style>
+        <Style x:Key="HeaderStyle" TargetType="Label">
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+        <Style x:Key="RowDivider" TargetType="BoxView">
+            <Setter Property="Margin" Value="0,5" />
+            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="HeightRequest" Value="1" />
+        </Style>
+        <Style x:Key="ColumnsLayout" TargetType="Grid">
+            <Setter Property="Margin" Value="10,0" />
+        </Style>
+        <Style x:Key="TableDataStyle" TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="TextColor" Value="White" />
+        </Style>
+        <Style x:Key="EditDeleteButton" TargetType="Label">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="extensions:CursorBehavior.Cursor" Value="Hand" />
+        </Style>
+        <Style x:Key="DataDivider" BaseResourceKey="RowDivider" TargetType="BoxView">
+            <Setter Property="BackgroundColor" Value="#4B4A4A" />
+        </Style>
+    </ContentView.Resources>
+
+    <Grid
+        ColumnDefinitions="*, 12"
+        ColumnSpacing="20"
+        RowDefinitions="*, auto"
+        HeightRequest="{Binding HeightRequest, Source={x:Reference This}}">
+
+        <Border 
+            HorizontalOptions="FillAndExpand"
+            Style="{StaticResource TableBorderStyle}">
+            <Grid
+                Margin="20, 10"
+                RowDefinitions="auto, *">
+
+                <!-- Header-->
+                <Grid
+                    Grid.Row="0"
+                    RowDefinitions="*, auto">
+
+                    <Grid 
+                        x:Name="Header"
+                        Style="{StaticResource ColumnsLayout}">
+                    </Grid>
+
+                    <!-- Header divider line -->
+                    <BoxView Grid.Row="1" Style="{StaticResource RowDivider}" />
+                </Grid>
+
+                <!--Table data-->
+                <CollectionView
+                    Grid.Row="1"
+                    VerticalScrollBarVisibility="Never"
+                    x:Name="CollectionData"
+                    ItemsSource="{Binding ModelList, Source={x:Reference This}}">
+                    <CollectionView.EmptyView>
+                        <Grid>
+                            <Label Text="No rows.." HorizontalOptions="Center"/>
+                        </Grid>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+            </Grid>
+        </Border>
+
+        <!-- Scroll bar -->
+        <Grid
+            Grid.Column="1"
+            Grid.Row="0">
+
+            <BoxView
+                BackgroundColor="Black"
+                WidthRequest="12"
+                CornerRadius="10" />
+
+            <AbsoluteLayout>
+                <BoxView
+                    BackgroundColor="#323131"
+                    WidthRequest="12"
+                    HeightRequest="100"
+                    CornerRadius="10" />
+            </AbsoluteLayout>
+        </Grid>
+
+        
+        <!-- Filters-->
+        <Grid
+            x:Name="FiltersRow"
+            Grid.Row="1"
+            Grid.Column="0"
+            Margin="30,5"
+            Style="{StaticResource ColumnsLayout}">
+        </Grid>
+
+    </Grid>
+</ContentView>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maui="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             x:Class="SchoolIS.App.Views.Components.PieChart"
+             x:Name="This">
+    
+    <maui:PieChart 
+        x:Name="Chart"
+        Series="{Binding Series, Source={x:Reference This}}"
+        LegendPosition="Left"
+        LegendTextSize="10"
+        TooltipTextSize="10"
+        AutoUpdateEnabled="True"
+    />
+</ContentView>

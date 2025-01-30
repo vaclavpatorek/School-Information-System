@@ -1,0 +1,54 @@
+trigger:
+- dev
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+stages:
+  - stage:
+    displayName: Build .NET application
+    jobs:
+      - job:
+        displayName: Build job
+        steps:
+          - task: NuGetCommand@2
+            displayName: NuGet restore
+            inputs:
+              restoreSolution: '**/*.sln'
+          - task: UseDotNet@2
+            displayName: Use .NET8 to build
+            inputs:
+              version: '8.0.x'
+              includePreviewVersions: true
+              
+          - script: dotnet workload install maui-ios
+            displayName: 'Install maui-ios workload'
+          
+          - script: dotnet workload install maccatalyst
+            displayName: 'Install maccatalyst workload'
+
+          - task: DotNetCoreCLI@2
+            displayName: Building Visual studio solution
+            inputs:
+              command: 'build'
+              projects: 'src/**/*.csproj'
+              arguments: '--configuration Debug'
+
+  - stage:
+    displayName: Run unit tests
+    jobs:
+      - job:
+        displayName: Unit tests job
+        steps:
+          - task: DotNetCoreCLI@2
+            displayName: Run Visual studio tests
+            inputs:
+              command: test
+              projects: 'src/**/*L.Tests.csproj'
+              publishTestResults: true
+              arguments: '--configuration Debug /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/Migrations/**/*.cs"'
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: '**/*coverage.cobertura.xml'
+

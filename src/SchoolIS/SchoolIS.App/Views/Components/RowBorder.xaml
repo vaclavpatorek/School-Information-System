@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="SchoolIS.App.Views.Components.RowBorder"
+        x:Name="This">
+
+    <Border
+        x:Name="_InnerBorder"
+        Stroke="{Binding Source={x:Reference This}, Path=BorderColor}"
+        StrokeThickness="1"
+        StrokeShape="RoundRectangle 10">
+    </Border>
+
+</ContentView>

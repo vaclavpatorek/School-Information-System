@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:SchoolIS.App.Views.Components"
+             xmlns:ext="clr-namespace:SchoolIS.App.Extensions"
+             xmlns:conv="clr-namespace:SchoolIS.App.Converters"
+             x:Class="SchoolIS.App.Views.Components.SortButton"
+             x:DataType="local:SortButton"
+             x:Name="This">
+    <ContentView.Resources>
+        <conv:SortButtonConverter x:Key="TextChooser"/>
+    </ContentView.Resources>
+
+    <Border StrokeThickness="0"
+            BindingContext="{x:Reference This}"
+            BackgroundColor="#232323"
+            WidthRequest="29" HeightRequest="30"
+            StrokeShape="RoundRectangle 9"
+            ext:CursorBehavior.Cursor="Hand">
+        <Label
+            FontFamily="FaSolid"
+            FontSize="15"
+            TextColor="#7C7C7C"
+            VerticalOptions="Center" HorizontalOptions="Center">
+            <Label.Text>
+                <MultiBinding Converter="{StaticResource TextChooser}">
+                    <Binding Path="SortAsc"/>
+                    <Binding Path="TextSortAsc"/>
+                    <Binding Path="TextSortDesc"/>
+                </MultiBinding>
+            </Label.Text>
+        </Label>
+        <Border.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding Source={x:Reference This}, Path=OnClickCommand}"/>
+        </Border.GestureRecognizers>
+    </Border>
+</ContentView>

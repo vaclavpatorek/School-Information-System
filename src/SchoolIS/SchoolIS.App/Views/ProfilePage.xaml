@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<views:ContentPageBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                       xmlns:components="clr-namespace:SchoolIS.App.Views.Components"
+                       xmlns:vm="clr-namespace:SchoolIS.App.ViewModels"
+                       xmlns:views="clr-namespace:SchoolIS.App.Views"
+                       xmlns:converters="clr-namespace:SchoolIS.App.Converters"
+                       xmlns:blmodels="clr-namespace:SchoolIS.BL.Models;assembly=SchoolIS.BL"
+                       xmlns:models="clr-namespace:SchoolIS.App.Models"
+                       xmlns:extensions="clr-namespace:SchoolIS.App.Extensions"
+                       x:DataType="vm:ProfileViewModel"
+                       x:Class="SchoolIS.App.Views.ProfilePage"
+                       Shell.PresentationMode="NotAnimated"
+                       x:Name="This">
+
+    <views:ContentPageBase.Resources>
+        <converters:ProfileImageConverter x:Key="ProfileImageConverter" />
+        <converters:CollectionIsNotEmptyConverter x:Key="CollectionIsNotEmptyConverter" />
+        <converters:ErrorTextConverter x:Key="ErrorTextConverter" />
+        <converters:InvalidFieldValueColorConverter x:Key="InvalidFieldValueColorConverter" />
+
+        <Style x:Key="ProfileTitle" TargetType="Label">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontAutoScalingEnabled" Value="False" />
+            <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        </Style>
+    </views:ContentPageBase.Resources>
+
+    <components:SideBarLayout>
+        <components:SideBarLayout.PageContent>
+            <Grid
+                RowDefinitions="140,*">
+
+                <Grid
+                    Grid.Row="0"
+                    HeightRequest="140"
+                    ColumnDefinitions="*,*"
+                    BackgroundColor="#121212"
+                    Padding="20,15"
+                    VerticalOptions="Start">
+
+                    <Label
+                        Grid.Column="0"
+                        Style="{StaticResource ProfileTitle}"
+                        TextDecorations="Underline"
+                        Text="Profile">
+                    </Label>
+
+                    <HorizontalStackLayout
+                        VerticalOptions="Start"
+                        Grid.Column="1"
+                        Spacing="10"
+                        IsVisible="{Binding DataChanged, 
+                            Converter={StaticResource CollectionIsNotEmptyConverter}}"
+                        HorizontalOptions="End">
+
+                        <!--Cancel button-->
+                        <Border
+                            StrokeShape="RoundRectangle 30"
+                            StrokeThickness="0"
+                            WidthRequest="50"
+                            HeightRequest="50"
+                            BackgroundColor="#290403"
+                            extensions:CursorBehavior.Cursor="Hand">
+
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CancelEditingCommand,
+                                    Source={x:Reference This}}" />
+                            </Border.GestureRecognizers>
+
+                            <Label
+                                Text="{x:Static models:FaSolidIcons.x}"
+                                FontFamily="FaSolid"
+                                FontSize="26"
+                                TextColor="White"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center" />
+                        </Border>
+
+                        <!--Save button-->
+                        <Border
+                            StrokeShape="RoundRectangle 30"
+                            StrokeThickness="0"
+                            WidthRequest="50"
+                            HeightRequest="50"
+                            BackgroundColor="#132910"
+                            extensions:CursorBehavior.Cursor="Hand">
+
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding ValidateAndTrySaveCommand, 
+                                        Source={x:Reference This}}" />
+                            </Border.GestureRecognizers>
+
+                            <Label
+                                FontFamily="FaSolid"
+                                Text="{x:Static models:FaSolidIcons.FloppyDisk}"
+                                FontSize="26"
+                                TextColor="White"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center" />
+                        </Border>
+
+                    </HorizontalStackLayout>
+
+                </Grid>
+
+                <StackLayout
+                    Grid.Row="1"
+                    Margin="20,-60,20,20">
+
+                    <StackLayout.Resources>
+                        <Style TargetType="components:Textfield">
+                            <Setter Property="BackgroundColor" Value="Transparent" />
+                        </Style>
+                    </StackLayout.Resources>
+
+                    <!--User avatar-->
+                    <Grid>
+
+                        <Frame
+                            VerticalOptions="Center"
+                            HorizontalOptions="Center"
+                            HeightRequest="120"
+                            WidthRequest="120"
+                            CornerRadius="125"
+                            Padding="0"
+                            extensions:CursorBehavior.Cursor="Hand"
+                            IsClippedToBounds="True">
+
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding EnablePhotoEditModeCommand,
+                                        Source={x:Reference This}}" />
+                            </Frame.GestureRecognizers>
+
+                            <Image
+                                Source="{Binding Photo, 
+                                Converter={StaticResource ProfileImageConverter}}"
+                                Aspect="AspectFill" />
+
+                        </Frame>
+                        <Border
+                            IsVisible="{Binding PhotoEditMode, 
+                                Source={x:Reference This}}"
+                            Stroke="{Binding InvalidFields, 
+                                Source={x:Reference This}, 
+                                Converter={StaticResource InvalidFieldValueColorConverter}}"
+                            StrokeShape="RoundRectangle 125"
+                            StrokeThickness="0"
+                            HeightRequest="120"
+                            WidthRequest="120"
+                            BackgroundColor="#80000000"
+                            extensions:CursorBehavior.Cursor="Hand">
+
+                            <components:Textfield
+                                x:Name="PhotoUrl"
+                                HorizontalOptions="Center"
+                                FontSize="24"
+                                Placeholder="URL"
+                                PlaceholderColor="#c4bcbc"
+                                OnUnFocusCommand="{Binding CancelPhotoEditModeCommand, 
+                                    Source={x:Reference This}}"
+                                OnCompletedCommand="{Binding UpdatePhotoCommand,
+                                    Source={x:Reference This}}" />
+                        </Border>
+                    </Grid>
+
+                    <!--User name-->
+                    <HorizontalStackLayout
+                        Spacing="5"
+                        Margin="0,10"
+                        HorizontalOptions="Center">
+
+                        <!--First Name-->
+                        <Label
+                            FontSize="24"
+                            TextColor="White"
+                            Margin="0,0,6,0"
+                            Text="{Binding AuthenticatedUser.FirstName}" />
+
+                        <!--Last Name-->
+                        <Label
+                            FontSize="24"
+                            Margin="-5,0,0,0"
+                            TextColor="White"
+                            Text="{Binding AuthenticatedUser.LastName}" />
+                    </HorizontalStackLayout>
+
+                    <!--Email-->
+                    <HorizontalStackLayout Spacing="5" HorizontalOptions="Center">
+                        <components:Textfield
+                            x:Name="EmailField"
+                            FontSize="14"
+                            Placeholder="No email"
+                            Margin="0,0,0,5"
+                            TextColor="{Binding InvalidFields, 
+                                Converter={StaticResource ErrorTextConverter},
+                                ConverterParameter=Email, 
+                                Source={x:Reference This}}"
+                            TextChangeCommand="{Binding UpdateEmailCommand, 
+                                                 Source={x:Reference This}}"
+                            Text="{Binding Email}" />
+                    </HorizontalStackLayout>
+
+                    <!--Phone number-->
+                    <HorizontalStackLayout Spacing="5" HorizontalOptions="Center">
+                        <components:Textfield
+                            x:Name="Phone"
+                            FontSize="12"
+                            Placeholder="No phone number"
+                            TextColor="{Binding InvalidFields, 
+                                Converter={StaticResource ErrorTextConverter},
+                                ConverterParameter=PhoneNumber, 
+                                Source={x:Reference This}}"
+                            TextChangeCommand="{Binding UpdatePhoneCommand,
+                                Source={x:Reference This}}"
+                            Text="{Binding Phone}" />
+                    </HorizontalStackLayout>
+
+                    <Label
+                        x:Name="ErrorMessage"
+                        Text="{Binding ErrorMessage}"
+                        TextColor="{StaticResource ErrorColor}"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Center"
+                        Margin="0,10"
+                        FontSize="16" />
+
+                    <VerticalStackLayout
+                        Margin="0,10,0,0"
+                        Spacing="10">
+
+                        <Label
+                            Text="My Subjects"
+                            FontSize="24"
+                            HorizontalOptions="Center"
+                            FontAttributes="Bold" />
+
+                        <!--Table with subjects-->
+                        <components:Table
+                            x:DataType="vm:ProfileViewModel"
+                            HeaderLabels="Shortcut, Name, Students"
+                            ColumnAlignment="Center, Start, Center"
+                            ColumnSpacing="30"
+                            ColumnDefinitions="100, *, 100"
+                            WidthRequest="600"
+                            HeightRequest="250"
+                            ModelList="{Binding Subjects}">
+
+                            <!--Define how a single row in the table should look-->
+                            <components:Table.ItemTemplate>
+                                <DataTemplate x:DataType="blmodels:SubjectDetailModel">
+                                    <StackLayout>
+                                        <!--Subject shortcut-->
+                                        <Label Text="{Binding Shortcut}" />
+                                        <!--Subject name-->
+                                        <Label Text="{Binding Name}" />
+                                        <!--Number of students-->
+                                        <Label Text="{Binding Students.Count}" />
+                                    </StackLayout>
+                                </DataTemplate>
+                            </components:Table.ItemTemplate>
+                        </components:Table>
+                    </VerticalStackLayout>
+
+                </StackLayout>
+            </Grid>
+        </components:SideBarLayout.PageContent>
+    </components:SideBarLayout>
+</views:ContentPageBase>

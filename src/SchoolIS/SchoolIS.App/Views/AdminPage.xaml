@@ -1,0 +1,790 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<views:ContentPageBase
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:zoft="http://zoft.MauiExtensions/Controls"
+    xmlns:components="clr-namespace:SchoolIS.App.Views.Components"
+    xmlns:models="clr-namespace:SchoolIS.App.Models"
+    xmlns:converters="clr-namespace:SchoolIS.App.Converters"
+    xmlns:extensions="clr-namespace:SchoolIS.App.Extensions"
+    xmlns:enums="clr-namespace:SchoolIS.Common.Enums;assembly=SchoolIS.Common"
+    xmlns:vm="clr-namespace:SchoolIS.App.ViewModels"
+    xmlns:views="clr-namespace:SchoolIS.App.Views"
+    xmlns:blmodels="clr-namespace:SchoolIS.BL.Models;assembly=SchoolIS.BL"
+    xmlns:adminConverters="clr-namespace:SchoolIS.App.Converters.AdminPage"
+    x:DataType="vm:AdminViewModel"
+    x:Class="SchoolIS.App.Views.AdminPage"
+    x:Name="This">
+
+    <views:ContentPageBase.Resources>
+        <adminConverters:SelectedUserConverter x:Key="SelectedUserConverter" />
+        <adminConverters:SelectedBackground x:Key="SelectedBackground" />
+        <adminConverters:ValidLoginConverter x:Key="ValidLoginConverter" />
+        <converters:InvalidFieldValueColorConverter x:Key="InvalidFieldValueColorConverter" />
+        <adminConverters:BoolToStringConverter x:Key="BoolToStringConverter" />
+        <adminConverters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+
+        <Style x:Key="SectionName" TargetType="Label">
+            <Setter Property="TextColor" Value="{StaticResource PrimaryTextColor}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+        </Style>
+
+        <Style x:Key="TableActionRowButton" TargetType="Label">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="extensions:CursorBehavior.Cursor" Value="Hand" />
+        </Style>
+
+        <Style x:Key="Divider" TargetType="BoxView">
+            <Setter Property="BackgroundColor" Value="{StaticResource TertiaryTextColor}" />
+        </Style>
+    </views:ContentPageBase.Resources>
+
+    <Grid RowDefinitions="auto,auto,*">
+        <components:AppBar />
+
+        <!-- Logout button -->
+        <HorizontalStackLayout
+            Grid.Row="1"
+            HeightRequest="30"
+            Spacing="10"
+            Margin="10,10,0,0">
+
+            <HorizontalStackLayout.Resources>
+                <Style TargetType="Label">
+                    <Setter Property="FontSize" Value="20" />
+                    <Setter Property="FontAttributes" Value="Bold" />
+                </Style>
+            </HorizontalStackLayout.Resources>
+
+            <HorizontalStackLayout.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding LogoutCommand}" />
+            </HorizontalStackLayout.GestureRecognizers>
+
+            <Label
+                extensions:CursorBehavior.Cursor="Hand"
+                FontFamily="FaSolid"
+                Text="{x:Static models:FaSolidIcons.ArrowRightFromBracket}"
+                VerticalTextAlignment="Center" />
+
+            <Label
+                Text="Log out"
+                VerticalTextAlignment="Center"
+                extensions:CursorBehavior.Cursor="Hand" />
+        </HorizontalStackLayout>
+
+        <ActivityIndicator
+            Grid.Row="2"
+            IsVisible="{Binding Loading}"
+            IsRunning="{Binding Loading}" />
+
+        <Grid Grid.Row="2"
+              IsVisible="{Binding Loading, Converter={StaticResource InverseBooleanConverter}}"
+              ColumnDefinitions="*,auto,*">
+
+            <!-- User layout-->
+            <ScrollView Orientation="Vertical"
+                        Margin="0,0,0,10"
+                        Grid.Column="0">
+
+                <VerticalStackLayout
+                    Margin="30,0,30,20">
+
+                    <Label
+                        Text="Users"
+                        Style="{StaticResource SectionName}" />
+
+                    <!--User Table -->
+                    <components:Table
+                        ColumnDefinitions="100,*,80,40"
+                        ColumnSpacing="15"
+                        HeaderLabels="Login, Name, Type"
+                        ColumnAlignment=",,Center"
+                        ModelList="{Binding FilteredUsers}">
+                        <components:Table.ItemTemplate>
+                            <DataTemplate x:DataType="blmodels:UserListModel">
+                                <StackLayout>
+
+
+                                    <Label Text="{Binding Login}" />
+                                    <Label Text="{Binding FullName}" />
+
+                                    <!--Type-->
+                                    <Label
+                                        Text="{Binding Type}"
+                                        TextColor="{Binding Type,
+                                            Converter={StaticResource SelectedUserConverter}}" />
+
+                                    <!-- Edit & delete-->
+                                    <HorizontalStackLayout Spacing="10">
+
+                                        <Label
+                                            Style="{StaticResource TableActionRowButton}"
+                                            FontFamily="FaSolid"
+                                            VerticalOptions="Center"
+                                            Text="{x:Static models:FaSolidIcons.UserPen}"
+                                            TextColor="{StaticResource TableActionIconColor}">
+
+
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding EditUserCommand,
+                                                        Source={x:Reference This}}"
+                                                    CommandParameter="{Binding Id}" />
+                                            </Label.GestureRecognizers>
+                                        </Label>
+
+                                        <Label
+                                            Style="{StaticResource TableActionRowButton}"
+                                            Text="{x:Static models:FaSolidIcons.x}"
+                                            VerticalOptions="Center"
+                                            TextColor="{StaticResource ErrorColor}">
+
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding 
+                                                        Source={RelativeSource 
+                                                        AncestorType={x:Type vm:AdminViewModel}}, 
+                                                        Path=DeleteUserCommand}"
+                                                    CommandParameter="{Binding}" />
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </HorizontalStackLayout>
+
+                                </StackLayout>
+                            </DataTemplate>
+                        </components:Table.ItemTemplate>
+
+                        <components:Table.Filters>
+                            <StackLayout>
+                                <!--No filter for login-->
+                                <Label />
+
+                                <!-- Find by name field-->
+                                <components:Textfield
+                                    Placeholder="Find by name"
+                                    TextChangeCommand="{Binding SearchByNameCommand}" />
+
+                                <!-- Student & Teacher buttons-->
+                                <HorizontalStackLayout Spacing="5">
+
+                                    <HorizontalStackLayout.Resources>
+                                        <adminConverters:SelectedUserTypeFilterConverter
+                                            x:Key="SelectedUserTypeFilterConverter" />
+                                        <converters:ActiveFilterBorderColor
+                                            x:Key="ActiveFilterBorderColor" />
+
+                                        <Style TargetType="Button">
+                                            <Setter Property="WidthRequest" Value="26" />
+                                            <Setter Property="HeightRequest" Value="26" />
+                                            <Setter Property="Padding" Value="0"></Setter>
+                                            <Setter Property="extensions:CursorBehavior.Cursor"
+                                                    Value="Hand" />
+                                        </Style>
+
+
+                                        <Style TargetType="Border">
+                                            <Setter Property="StrokeShape" Value="RoundRectangle 7" />
+                                        </Style>
+                                    </HorizontalStackLayout.Resources>
+
+                                    <Border
+                                        StrokeThickness="1"
+                                        Stroke="{Binding ActiveUserTypeFilter, 
+                                            Converter={StaticResource ActiveFilterBorderColor},
+                                            ConverterParameter={x:Static enums:UserType.Student}}">
+
+                                        <Button
+                                            TextColor="{StaticResource StudentColor}"
+                                            Text="S"
+                                            BackgroundColor="{Binding ActiveUserTypeFilter, 
+                                                 Converter={StaticResource SelectedUserTypeFilterConverter},
+                                                 ConverterParameter={x:Static enums:UserType.Student}}"
+                                            Command="{Binding FilterByUserTypeCommand}"
+                                            CommandParameter="{x:Static enums:UserType.Student}" />
+
+                                    </Border>
+
+                                    <Border
+                                        StrokeThickness="1"
+                                        Stroke="{Binding ActiveUserTypeFilter, 
+                                            Converter={StaticResource ActiveFilterBorderColor},
+                                            ConverterParameter={x:Static enums:UserType.Teacher}}">
+
+                                        <Button
+                                            TextColor="{StaticResource TeacherColor}"
+                                            Text="T"
+
+                                            Command="{Binding FilterByUserTypeCommand}"
+                                            CommandParameter="{x:Static enums:UserType.Teacher}">
+                                            <Button.BackgroundColor>
+                                                <Binding Path="ActiveUserTypeFilter"
+                                                         Converter="{StaticResource SelectedUserTypeFilterConverter}"
+                                                         ConverterParameter="{x:Static enums:UserType.Teacher}" />
+                                            </Button.BackgroundColor>
+                                        </Button>
+                                    </Border>
+                                </HorizontalStackLayout>
+                            </StackLayout>
+                        </components:Table.Filters>
+                    </components:Table>
+
+                    <!-- Horizontal Divider-->
+                    <BoxView
+                        Style="{StaticResource Divider}"
+                        HeightRequest="1"
+                        Margin="0,10,0,0" />
+
+                    <!-- User settings -->
+                    <Grid
+                        Margin="30,10,20,10"
+                        ColumnSpacing="30"
+                        ColumnDefinitions="*, 120">
+
+                        <Grid
+                            ColumnSpacing="10"
+                            RowSpacing="15"
+                            RowDefinitions="*,*,*,*"
+                            ColumnDefinitions="*,*">
+
+                            <Grid.Resources>
+                                <Style TargetType="components:Textfield">
+                                    <Setter Property="BorderWidth" Value="2" />
+                                    <Setter Property="HeightRequest" Value="34" />
+                                </Style>
+                            </Grid.Resources>
+
+                            <!-- Login text -->
+                            <Grid
+                                Grid.Column="0"
+                                ColumnDefinitions="auto, 80, *"
+                                VerticalOptions="Center"
+                                Grid.ColumnSpan="2"
+                                Grid.Row="0"
+                                ColumnSpacing="10">
+
+                                <Label
+                                    Grid.Column="0"
+                                    Text="Login:"
+                                    FontAttributes="Bold"
+                                    FontSize="14" />
+
+                                <Label
+                                    x:Name="Login"
+                                    Grid.Column="1"
+                                    Text="{Binding NewUser.Login}"
+                                    TextColor="{Binding NewUser.Login, 
+                                        Converter={StaticResource ValidLoginConverter}}" />
+
+                                <!-- Student & Teacher labels-->
+                                <HorizontalStackLayout
+                                    Grid.Column="2"
+                                    Margin="10,0"
+                                    Spacing="10"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="Center">
+
+                                    <HorizontalStackLayout.Resources>
+                                        <Style TargetType="Label">
+                                            <Setter Property="FontSize" Value="16" />
+                                            <Setter Property="TextColor"
+                                                    Value="{StaticResource SecondaryTextColor}" />
+                                            <Setter Property="extensions:CursorBehavior.Cursor"
+                                                    Value="Hand" />
+                                        </Style>
+                                    </HorizontalStackLayout.Resources>
+
+                                    <Label
+                                        Text="Student"
+                                        TextColor="{Binding NewUser.Type, 
+                                            Converter={StaticResource SelectedUserConverter}, 
+                                            ConverterParameter={x:Static enums:UserType.Student}}">
+
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding SelectUserTypeCommand}"
+                                                CommandParameter="{x:Static enums:UserType.Student}" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+
+                                    <Label
+                                        Text="Teacher"
+                                        TextColor="{Binding NewUser.Type, 
+                                            Converter={StaticResource SelectedUserConverter}, 
+                                            ConverterParameter={x:Static enums:UserType.Teacher}}">
+
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding SelectUserTypeCommand}"
+                                                CommandParameter="{x:Static enums:UserType.Teacher}" />
+                                        </Label.GestureRecognizers>
+                                    </Label>
+
+                                </HorizontalStackLayout>
+                            </Grid>
+
+                            <!-- Text fields-->
+                            <components:Textfield
+                                x:Name="FirstName"
+                                Grid.Column="0" Grid.Row="1"
+                                BorderColor="{Binding InvalidUserFields, 
+                                    Converter={StaticResource InvalidFieldValueColorConverter},
+                                    ConverterParameter=FirstName, 
+                                    Source={x:Reference This}}"
+                                Placeholder="First Name"
+                                Text="{Binding NewUser.FirstName}" />
+
+                            <components:Textfield
+                                x:Name="LastName"
+                                Grid.Column="0" Grid.Row="2"
+                                BorderColor="{Binding InvalidUserFields, 
+                                  Converter={StaticResource InvalidFieldValueColorConverter},
+                                  ConverterParameter=LastName, 
+                                    Source={x:Reference This}}"
+                                Placeholder="Last Name"
+                                Text="{Binding NewUser.LastName}" />
+
+                            <components:Textfield
+                                x:Name="Phone"
+                                Grid.Column="0" Grid.Row="3"
+                                BorderColor="{Binding InvalidUserFields, 
+                                  Converter={StaticResource InvalidFieldValueColorConverter},
+                                  ConverterParameter=PhoneNumber, 
+                                    Source={x:Reference This}}"
+                                Placeholder="Phone"
+                                Text="{Binding NewUser.PhoneNumber}" />
+
+                            <components:Textfield
+                                x:Name="Email"
+                                Grid.Column="1" Grid.Row="1"
+                                BorderColor="{Binding InvalidUserFields, 
+                                  Converter={StaticResource InvalidFieldValueColorConverter},
+                                  ConverterParameter=Email, 
+                                    Source={x:Reference This}}"
+                                Placeholder="Email"
+                                Text="{Binding NewUser.Email}" />
+
+                            <components:Textfield
+                                x:Name="Password"
+                                Grid.Column="1" Grid.Row="2"
+                                BorderColor="{Binding InvalidUserFields, 
+                                  Converter={StaticResource InvalidFieldValueColorConverter},
+                                  ConverterParameter=Password, 
+                                    Source={x:Reference This}}"
+                                Text="{Binding NewUser.Password}"
+                                Placeholder="Password" />
+                        </Grid>
+
+                        <!-- User subjects-->
+                        <VerticalStackLayout
+                            Margin="0,20,0,0"
+                            Grid.Column="1">
+
+                            <Label Text="Subjects"
+                                   HorizontalOptions="Center"
+                                   FontSize="16"
+                                   Margin="0,0,0,5"
+                                   FontAttributes="Bold" />
+
+                            <CollectionView
+                                VerticalScrollBarVisibility="Never"
+                                HeightRequest="120"
+                                ItemsSource="{Binding FilteredUserSubjects}">
+
+                                <CollectionView.EmptyView>
+                                    <Label Text="No subjects"
+                                           HorizontalTextAlignment="Center"
+                                           Margin="10,0,0,0"
+                                           TextColor="{StaticResource TertiaryTextColor}"
+                                           FontSize="14" />
+
+                                </CollectionView.EmptyView>
+
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="5" />
+                                </CollectionView.ItemsLayout>
+
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="blmodels:SubjectListModel">
+                                        <Border
+                                            StrokeThickness="0"
+                                            Padding="0,5"
+                                            StrokeShape="RoundRectangle 20"
+                                            extensions:CursorBehavior.Cursor="Hand"
+                                            HorizontalOptions="Center">
+
+                                            <Border.BackgroundColor>
+                                                <MultiBinding
+                                                    Converter="{StaticResource SelectedBackground}">
+                                                    <Binding Path="Id" />
+                                                    <Binding
+                                                        Source="{RelativeSource AncestorType={x:Type vm:AdminViewModel}}"
+                                                        Path="UserSubjects" />
+                                                </MultiBinding>
+                                            </Border.BackgroundColor>
+
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding SelectSubjectCommand,
+                                                        Source={RelativeSource AncestorType={x:Type vm:AdminViewModel}} }"
+                                                    CommandParameter="{Binding }" />
+
+                                            </Border.GestureRecognizers>
+
+
+                                            <Label Text="{Binding Shortcut}"
+                                                   HorizontalOptions="Center" />
+
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                            <BoxView
+                                Margin="5"
+                                HeightRequest="1"
+                                Style="{StaticResource Divider}" />
+
+                            <!--Search subject field-->
+                            <components:Textfield
+                                Placeholder="Search"
+                                WidthRequest="80"
+                                HorizontalOptions="Center"
+                                TextChangeCommand="{Binding SearchSubjectCommand}" />
+
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!--Error Text-->
+                    <Label
+                        x:Name="UserErrorMessage"
+                        HeightRequest="20"
+                        TextColor="{StaticResource ErrorColor}"
+                        HorizontalTextAlignment="Center"
+                        Text="{Binding UserErrorMessage, Mode=TwoWay}"
+                        FontSize="16" />
+
+                    <!--Bottom buttons-->
+                    <HorizontalStackLayout
+                        HorizontalOptions="Center"
+                        Spacing="20"
+                        Margin="0,10">
+
+                        <!-- Add Cancel editing mode -->
+                        <components:BlackButton
+                            Text="Cancel"
+                            IsVisible="{Binding IsEditingUser}"
+                            Command="{Binding CancelUserEditingCommand,
+                                Source={x:Reference This}}"
+                            WidthRequest="200"
+                            Padding="10" />
+
+                        <!-- Add User button-->
+                        <components:BlackButton
+                            Text="{Binding IsEditingUser,
+                                Converter={StaticResource BoolToStringConverter}, 
+                                ConverterParameter='Edit user;Add user'}"
+                            Command="{Binding ValidateDataAndAddUserCommand, 
+                                Source={x:Reference This}}"
+                            WidthRequest="200"
+                            Padding="10" />
+
+                    </HorizontalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- Vertical Divider-->
+            <BoxView Style="{StaticResource Divider}"
+                     Grid.Column="1"
+                     WidthRequest="1"
+                     Margin="0,0,0,10" />
+
+            <!-- Subject layout-->
+            <ScrollView Orientation="Vertical"
+                        Margin="0,0,0,10"
+                        Grid.Column="2">
+
+                <VerticalStackLayout
+                    Margin="30,0,30,20">
+
+                    <Label
+                        Text="Subjects"
+                        Style="{x:StaticResource SectionName}" />
+
+                    <!--Subject Table-->
+                    <components:Table
+                        ColumnDefinitions="80,*,40"
+                        ColumnSpacing="15"
+                        HeaderLabels="Shortcut, Name"
+                        ColumnAlignment="Center,,"
+                        ModelList="{Binding FilteredSubjects}">
+
+                        <components:Table.ItemTemplate>
+                            <DataTemplate x:DataType="blmodels:SubjectListModel">
+                                <StackLayout>
+                                    <!--Shortcut-->
+                                    <Label Text="{Binding Shortcut}" />
+
+                                    <!-- Subject name-->
+                                    <Label Text="{Binding Name}" />
+
+                                    <!-- Edit & delete-->
+                                    <HorizontalStackLayout Spacing="10">
+
+                                        <!--Edit-->
+                                        <Label
+                                            Style="{StaticResource TableActionRowButton}"
+                                            FontFamily="FaSolid"
+                                            Text="{x:Static models:FaSolidIcons.Pen}"
+                                            VerticalOptions="Center"
+                                            TextColor="{StaticResource TableActionIconColor}">
+
+
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding EditSubjectCommand,
+                                                        Source={x:Reference This}}"
+                                                    CommandParameter="{Binding Id}" />
+                                            </Label.GestureRecognizers>
+                                        </Label>
+
+                                        <!--Delete-->
+                                        <Label
+                                            Style="{StaticResource TableActionRowButton}"
+                                            Text="{x:Static models:FaSolidIcons.x}"
+                                            VerticalOptions="Center"
+                                            TextColor="{StaticResource ErrorColor}">
+
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding DeleteSubjectCommand,
+                                                        Source={RelativeSource 
+                                                        AncestorType={x:Type vm:AdminViewModel}}}"
+                                                    CommandParameter="{Binding}" />
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </HorizontalStackLayout>
+                                </StackLayout>
+                            </DataTemplate>
+                        </components:Table.ItemTemplate>
+
+                        <components:Table.Filters>
+                            <StackLayout>
+
+                                <!-- Find by Shortcut field-->
+                                <components:Textfield
+                                    Placeholder="Shortcut"
+                                    TextChangeCommand="{Binding SearchBySubjectShortcutCommand}" />
+
+                                <!-- Find by Name field-->
+                                <components:Textfield
+                                    Placeholder="Name"
+                                    TextChangeCommand="{Binding SearchBySubjectNameCommand}" />
+
+                            </StackLayout>
+                        </components:Table.Filters>
+                    </components:Table>
+
+
+                    <!-- Horizontal Divider-->
+                    <BoxView
+                        Style="{StaticResource Divider}"
+                        HeightRequest="1"
+                        Margin="0,10,0,0" />
+
+                    <!-- Subject settings -->
+                    <Grid
+                        Margin="20,30,20,20"
+                        ColumnSpacing="20"
+                        ColumnDefinitions="*, auto, 180">
+
+                        <!-- Subject Fields -->
+                        <Grid
+                            RowSpacing="20"
+                            RowDefinitions="20, *, *, *">
+
+                            <Label
+                                Text="New subject data"
+                                HorizontalOptions="Center"
+                                FontSize="16" />
+
+                            <components:Textfield
+                                x:Name="Shortcut"
+                                Grid.Row="1"
+                                BorderWidth="2"
+                                WidthRequest="80"
+                                HorizontalOptions="Start"
+                                HeightRequest="34"
+                                Placeholder="Shortcut"
+                                BorderColor="{Binding InvalidSubjectFields, 
+                                  Converter={StaticResource InvalidFieldValueColorConverter},
+                                  ConverterParameter=Shortcut, 
+                                    Source={x:Reference This}}"
+                                Text="{Binding NewSubject.Shortcut}" />
+
+                            <components:Textfield
+                                x:Name="SubjectName"
+                                Grid.Row="2"
+                                BorderWidth="2"
+                                HeightRequest="34"
+                                BorderColor="{Binding InvalidSubjectFields, 
+                                  Converter={StaticResource InvalidFieldValueColorConverter},
+                                  ConverterParameter=Name, 
+                                    Source={x:Reference This}}"
+                                Text="{Binding NewSubject.Name}"
+                                Placeholder="Name" />
+
+                            <components:Textfield
+                                Grid.Row="3"
+                                Text="{Binding NewSubject.Info}"
+                                Placeholder="Info" />
+
+                        </Grid>
+
+                        <!-- Vertical Divider-->
+                        <BoxView Grid.Column="1" Style="{StaticResource Divider}"
+                                 WidthRequest="1"
+                                 Margin="0,10,0,0" />
+
+                        <!--Adding teacher to subject-->
+                        <Grid
+                            Grid.Column="2"
+                            RowSpacing="10"
+                            RowDefinitions="auto, auto, *">
+
+                            <!-- Teacher label-->
+                            <Label
+                                Grid.Row="0"
+                                Text="Teachers"
+                                FontSize="16"
+                                HorizontalOptions="Center" />
+
+                            <Border
+                                Grid.Row="1">
+
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+
+                                <!-- Teacher field-->
+                                <zoft:AutoCompleteEntry
+                                    x:Name="TeacherEntry"
+                                    BackgroundColor="#202020"
+                                    HeightRequest="30"
+                                    Margin="0, -2"
+                                    Placeholder="Find teacher"
+                                    PlaceholderColor="{StaticResource PlaceholderColor}"
+                                    ItemsSource="{Binding Teachers}"
+                                    TextMemberPath="FullName"
+                                    DisplayMemberPath="FullName"
+                                    TextChanged="AutoCompleteEntry_TextChanged" />
+                            </Border>
+
+                            <!-- Table row-->
+                            <CollectionView
+                                Grid.Row="2"
+                                VerticalScrollBarVisibility="Never"
+                                HeightRequest="100"
+                                Margin="10,0"
+                                ItemsSource="{Binding SubjectTeachers}">
+
+                                <CollectionView.EmptyView>
+                                    <Label
+                                        Margin="0,10,0,0"
+                                        HorizontalOptions="Center"
+                                        HorizontalTextAlignment="Center"
+                                        TextColor="{StaticResource TertiaryTextColor}"
+                                        Text="No teacher" />
+                                </CollectionView.EmptyView>
+
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="3" />
+                                </CollectionView.ItemsLayout>
+
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="blmodels:HasSubjectListModel">
+                                        <Grid ColumnDefinitions="auto, *, auto">
+
+                                            <Label
+                                                Grid.Column="0"
+                                                Text="{Binding UserFirstName}"
+                                                FontSize="16" />
+
+                                            <Label
+                                                Grid.Column="1"
+                                                Margin="6,0,0,0"
+                                                Text="{Binding UserLastName}"
+                                                FontSize="16" />
+
+                                            <Label
+                                                Grid.Column="2"
+                                                VerticalOptions="Center"
+                                                extensions:CursorBehavior.Cursor="Hand"
+                                                TextColor="{StaticResource ErrorColor}"
+                                                Text="{x:Static models:FaSolidIcons.x }">
+
+                                                <Label.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Command="{Binding 
+                                                        Source={RelativeSource 
+                                                        AncestorType={x:Type vm:AdminViewModel}}, 
+                                                        Path=RemoveSubjectTeacherCommand}"
+                                                        CommandParameter="{Binding}" />
+                                                </Label.GestureRecognizers>
+                                            </Label>
+
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                        </Grid>
+
+                    </Grid>
+
+                    <!--Error Text-->
+                    <Label
+                        x:Name="SubjectErrorMessage"
+                        HeightRequest="20"
+                        TextColor="{StaticResource ErrorColor}"
+                        HorizontalTextAlignment="Center"
+                        Text="{Binding SubjectErrorMessage, Mode=TwoWay}"
+                        FontSize="16" />
+
+
+                    <!--Bottom buttons-->
+                    <HorizontalStackLayout
+                        HorizontalOptions="Center"
+                        Spacing="20"
+                        Margin="0,10">
+
+                        <!-- Add Cancel editing mode -->
+                        <components:BlackButton
+                            Text="Cancel"
+                            IsVisible="{Binding IsEditingSubject}"
+                            Command="{Binding CancelSubjectEditingCommand,
+                             Source={x:Reference This}}"
+                            WidthRequest="200"
+                            Padding="10" />
+
+                        <!-- Add Subject button-->
+                        <components:BlackButton
+                            Text="{Binding IsEditingSubject,
+                                 Converter={StaticResource BoolToStringConverter}, 
+                                 ConverterParameter='Edit subject;Add subject'}"
+                            Command="{Binding ValidateDataAndAddSubjectCommand, 
+                                Source={x:Reference This}}"
+                            WidthRequest="200"
+                            Padding="10" />
+
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+            </ScrollView>
+        </Grid>
+    </Grid>
+</views:ContentPageBase>

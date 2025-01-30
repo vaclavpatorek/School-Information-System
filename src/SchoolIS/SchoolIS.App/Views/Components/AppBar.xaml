@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SchoolIS.App.Views.Components.AppBar">
+    <ContentView.Content>
+        <Grid HeightRequest="60"
+              BackgroundColor="Black">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <Image Grid.Column="0" HorizontalOptions="Start" Source="vut_logo.png" />
+
+            <Label Grid.Column="1"
+                   Text="School Information System"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" />
+
+            <HorizontalStackLayout
+                Grid.Column="2"
+                HorizontalOptions="End"
+                Margin="0, 0, 30,0"
+                Spacing="10">
+
+                <Label x:Name="Time"
+                       TextColor="#B0B0B0"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       VerticalTextAlignment="Center" />
+
+                <Label x:Name="Date"
+                       TextColor="White"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       VerticalTextAlignment="Center" />
+
+
+            </HorizontalStackLayout>
+
+        </Grid>
+    </ContentView.Content>
+</ContentView>
